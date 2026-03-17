@@ -4,6 +4,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from typing import Optional
 from sqlalchemy import func
 from sqlalchemy.orm import Session
+from fastapi.middleware.cors import CORSMiddleware
 from .database import SessionLocal
 from .models import Chemical, AnalysisLog
 from .risk_engine import calculate_product_risk
@@ -19,6 +20,14 @@ import time
 logger = setup_logging()
 
 app = FastAPI(title="Ingrevia API", version="5.0.0")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins (e.g. localhost:3000, localhost:3001)
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods (GET, POST, etc.)
+    allow_headers=["*"],  # Allows all headers
+)
 
 app.add_exception_handler(StarletteHTTPException, http_exception_handler)
 app.add_exception_handler(RequestValidationError, validation_exception_handler)
