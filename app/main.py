@@ -6,11 +6,18 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
 from .database import SessionLocal, engine
-from .models import Chemical, AnalysisLog, User, Base
+from .models import Chemical, AnalysisLog, User, Base, UserAllergy
 from .risk_engine import calculate_product_risk
-from .schemas import AnalysisLogResponse, IngredientListRequest, UserCreate, UserLogin
+from .schemas import (
+    AnalysisLogResponse, 
+    IngredientListRequest, 
+    UserCreate, 
+    UserLogin,
+    UserAllergyCreate
+)
 from .core.security import hash_password, verify_password
 from .core.auth import create_access_token
+from typing import List
 from .core.exceptions import (
     http_exception_handler,
     validation_exception_handler,
@@ -84,6 +91,26 @@ def analyze_list(request: IngredientListRequest, db: Session = Depends(get_db)):
 
     # Calculate risk using the dedicated engine
     overall_score, category, recognized, reasoning = calculate_product_risk(chemical_objects)
+
+    # Personalized Allergy Check
+    if request.user_email:
+        user = db.query(User).filter(User.email == request.user_email).first()
+        if user:
+            user_allergies = db.query(UserAllergy).filter(UserAllergy.user_id == user.id).all()
+            user_allergy_list = [a.allergen.lower() for a in user_allergies]
+
+            allergy_found = False
+            found_allergens = []
+
+            for ingredient in recognized:
+                if ingredient["name"].lower() in user_allergy_list:
+                    allergy_found = True
+                    found_allergens.append(ingredient["name"])
+
+            if allergy_found:
+                category = "High"
+                allergens_str = ", ".join(found_allergens)
+                reasoning = f"High risk because {allergens_str} matches your allergy profile. " + reasoning
 
     # Identify unrecognized ingredients properly
     recognized_names = [chem.name.lower() for chem in chemical_objects]
@@ -200,3 +227,35 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
     token = create_access_token({"sub": db_user.email})
 
     return {"access_token": token}
+
+# ----------------------------
+# ALLERGY PROFILE
+# ----------------------------
+
+@app.post("/add-allergies")
+def add_allergies(request: UserAllergyCreate, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.email == request.user_email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    for item in request.allergies:
+        # Check if already exists to avoid duplicates
+        existing = db.query(UserAllergy).filter(
+            UserAllergy.user_id == user.id, 
+            func.lower(UserAllergy.allergen) == item.lower()
+        ).first()
+        if not existing:
+            entry = UserAllergy(user_id=user.id, allergen=item)
+            db.add(entry)
+
+    db.commit()
+    return {"message": "Allergies saved"}
+
+@app.get("/get-allergies")
+def get_allergies(user_email: str, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.email == user_email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    data = db.query(UserAllergy).filter(UserAllergy.user_id == user.id).all()
+    return [item.allergen for item in data]

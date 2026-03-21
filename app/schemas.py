@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from datetime import datetime
+from typing import List, Optional
 
 class AnalysisLogResponse(BaseModel):
     id: int
@@ -13,6 +14,7 @@ class AnalysisLogResponse(BaseModel):
 
 class IngredientListRequest(BaseModel):
     ingredients: str
+    user_email: Optional[str] = None
 
 
 class UserCreate(BaseModel):
@@ -25,3 +27,7 @@ class UserCreate(BaseModel):
 class UserLogin(BaseModel):
     email: str
     password: str
+
+class UserAllergyCreate(BaseModel):
+    user_email: str
+    allergies: List[str]
