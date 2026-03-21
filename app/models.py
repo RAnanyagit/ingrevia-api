@@ -54,3 +54,15 @@ class User(Base):
     age = Column(Integer)
     phone = Column(String)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+    allergies = relationship("UserAllergy", back_populates="user", cascade="all, delete-orphan")
+
+
+class UserAllergy(Base):
+    __tablename__ = "user_allergies"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
+    allergen = Column(String)
+
+    user = relationship("User", back_populates="allergies")
