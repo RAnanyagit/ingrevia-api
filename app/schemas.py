@@ -13,3 +13,15 @@ class AnalysisLogResponse(BaseModel):
 
 class IngredientListRequest(BaseModel):
     ingredients: str
+
+
+class UserCreate(BaseModel):
+    name: str
+    email: str
+    password: str
+    age: int
+    phone: str
+
+class UserLogin(BaseModel):
+    email: str
+    password: str

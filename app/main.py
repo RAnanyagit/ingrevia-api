@@ -6,9 +6,11 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
 from .database import SessionLocal
-from .models import Chemical, AnalysisLog
+from .models import Chemical, AnalysisLog, User
 from .risk_engine import calculate_product_risk
-from .schemas import AnalysisLogResponse, IngredientListRequest
+from .schemas import AnalysisLogResponse, IngredientListRequest, UserCreate, UserLogin
+from .core.security import hash_password, verify_password
+from .core.auth import create_access_token
 from .core.exceptions import (
     http_exception_handler,
     validation_exception_handler,
@@ -161,3 +163,38 @@ def risk_summary(db: Session = Depends(get_db)):
 def get_chemicals(db: Session = Depends(get_db)):
     chemicals = db.query(Chemical).all()
     return chemicals
+
+# ----------------------------
+# USER AUTHENTICATION
+# ----------------------------
+
+@app.post("/signup")
+def signup(user: UserCreate, db: Session = Depends(get_db)):
+    existing = db.query(User).filter(User.email == user.email).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="Email already registered")
+
+    new_user = User(
+        name=user.name,
+        email=user.email,
+        password=hash_password(user.password),
+        age=user.age,
+        phone=user.phone
+    )
+
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+
+    return {"message": "User created successfully"}
+
+@app.post("/login")
+def login(user: UserLogin, db: Session = Depends(get_db)):
+    db_user = db.query(User).filter(User.email == user.email).first()
+
+    if not db_user or not verify_password(user.password, db_user.password):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+
+    token = create_access_token({"sub": db_user.email})
+
+    return {"access_token": token}
