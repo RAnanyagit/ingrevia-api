@@ -5,8 +5,8 @@ from typing import Optional
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
-from .database import SessionLocal
-from .models import Chemical, AnalysisLog, User
+from .database import SessionLocal, engine
+from .models import Chemical, AnalysisLog, User, Base
 from .risk_engine import calculate_product_risk
 from .schemas import AnalysisLogResponse, IngredientListRequest, UserCreate, UserLogin
 from .core.security import hash_password, verify_password
@@ -22,6 +22,8 @@ import time
 logger = setup_logging()
 
 app = FastAPI(title="Ingrevia API", version="5.0.0")
+
+Base.metadata.create_all(bind=engine)
 
 app.add_middleware(
     CORSMiddleware,
