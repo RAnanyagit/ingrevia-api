@@ -1,11 +1,28 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./App.css";
 
 function App() {
   const [ingredients, setIngredients] = useState("");
   const [result, setResult] = useState(null);
+  const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  const userEmail = "test@gmail.com"; 
+
+  const fetchHistory = async () => {
+    try {
+      const res = await fetch(`https://ingrevia-api.onrender.com/analysis-logs`);
+      const data = await res.json();
+      setHistory(data);
+    } catch (err) {
+      console.error("Failed to fetch history:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchHistory();
+  }, []);
 
   const analyzeIngredients = async () => {
     if (!ingredients.trim()) return;
@@ -22,7 +39,10 @@ function App() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ ingredients }),
+          body: JSON.stringify({ 
+            ingredients,
+            user_email: userEmail
+          }),
         }
       );
 
@@ -32,6 +52,7 @@ function App() {
 
       const data = await response.json();
       setResult(data);
+      fetchHistory();
     } catch (error) {
       console.error("Error:", error);
       setError("An error occurred while analyzing the ingredients. Please try again.");
@@ -72,9 +93,9 @@ function App() {
     <div className="app-container">
       <header className="header">
         <h1>
-          <span>🧪</span> Ingrevia
+          <span>🧪</span> AllerSafe
         </h1>
-        <p>AI-powered cosmetic ingredient risk analysis. Paste your ingredients below to discover what's inside.</p>
+        <p>Advanced cosmetic safety dashboard. Paste your ingredients below for personalized allergy-aware analysis.</p>
       </header>
 
       <div className="glass-panel input-section">
@@ -125,12 +146,12 @@ function App() {
             </div>
 
             <div className="reason-card">
-              <h3><span>📊</span> Analysis Breakdown</h3>
+              <h3><span>📊</span> Personalized Results</h3>
               <p>{result.product_analysis.analysis_reasoning}</p>
             </div>
           </div>
 
-          <div className="ingredients-section">
+          <div className="ingredients-section bg-section">
             <div className="ingredients-header">
               <h3><span>🧊</span> Identified Ingredients</h3>
               <span className="ingredients-count">
@@ -173,6 +194,33 @@ function App() {
           </div>
         </div>
       )}
+
+      {/* HISTORY SECTION */}
+      <div className="history-section" style={{ marginTop: "60px" }}>
+        <div className="ingredients-header">
+          <h3><span>📜</span> Previous Reports</h3>
+          <span className="ingredients-count">{history.length} reports</span>
+        </div>
+        
+        <div className="history-grid">
+          {history.map((item) => {
+            const riskLvl = getRiskClass(item.category);
+            return (
+              <div key={item.id} className="history-item glass-panel">
+                <div className="history-info">
+                  <div className="history-input">{item.ingredient_input.substring(0, 60)}...</div>
+                  <div className="history-date">
+                    {new Date(item.timestamp).toLocaleDateString()}
+                  </div>
+                </div>
+                <div className={`badge badge-${riskLvl}`}>
+                  {item.category}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }

@@ -394,6 +394,42 @@ body {
   to { transform: rotate(360deg); }
 }
 
+.history-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.history-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 30px !important;
+  transition: all 0.3s ease;
+}
+
+.history-item:hover {
+  transform: scale(1.02);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.history-info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.history-input {
+  color: #fff;
+  font-weight: 600;
+  font-size: 1.05rem;
+}
+
+.history-date {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
 @media (max-width: 768px) {
   .dashboard-section {
     grid-template-columns: 1fr;
