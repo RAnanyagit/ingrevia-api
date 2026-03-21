@@ -27,12 +27,11 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
 
 async def generic_exception_handler(request: Request, exc: Exception):
-    import traceback
     return JSONResponse(
         status_code=500,
         content={
             "success": False,
             "error": "InternalServerError",
-            "message": f"Error: {type(exc).__name__} - {str(exc)} \n\n {traceback.format_exc()}",
+            "message": "An unexpected error occurred.",
         },
     )
