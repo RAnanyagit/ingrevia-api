@@ -430,6 +430,102 @@ body {
   font-size: 0.85rem;
 }
 
+.login-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 120px);
+}
+
+.login-card {
+  width: 100%;
+  max-width: 450px;
+  animation: fadeIn 0.6s ease-out;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.custom-input {
+  width: 100%;
+  background: rgba(11, 15, 25, 0.6) !important;
+  border: 1px solid var(--panel-border) !important;
+  border-radius: 10px !important;
+  padding: 12px 15px !important;
+  color: #fff !important;
+  font-family: inherit;
+  transition: all 0.3s ease;
+}
+
+.custom-input:focus {
+  outline: none;
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 10px rgba(88, 166, 255, 0.2);
+}
+
+.login-btn {
+  width: 100%;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.auth-footer {
+  margin-top: 25px;
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.link-text {
+  color: var(--primary);
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.error-text {
+  color: var(--risk-high);
+  font-size: 0.85rem;
+  margin-top: 5px;
+}
+
+/* User Nav */
+.user-nav {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.user-badge {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.logout-btn {
+  background: transparent;
+  border: 1px solid var(--panel-border);
+  color: var(--text-muted);
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.logout-btn:hover {
+  background: rgba(248, 81, 73, 0.1);
+  color: var(--risk-high);
+  border-color: rgba(248, 81, 73, 0.3);
+}
+
 @media (max-width: 768px) {
   .dashboard-section {
     grid-template-columns: 1fr;

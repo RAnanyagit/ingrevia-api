@@ -1,14 +1,20 @@
 import { useState, useEffect } from "react";
 import "./App.css";
+import Login from "./Login";
 
 function App() {
+  const [user, setUser] = useState(null);
   const [ingredients, setIngredients] = useState("");
   const [result, setResult] = useState(null);
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const userEmail = "test@gmail.com"; 
+  useEffect(() => {
+    const savedUser = localStorage.getItem("email");
+    if (savedUser) setUser(savedUser);
+    fetchHistory();
+  }, []);
 
   const fetchHistory = async () => {
     try {
@@ -19,10 +25,6 @@ function App() {
       console.error("Failed to fetch history:", err);
     }
   };
-
-  useEffect(() => {
-    fetchHistory();
-  }, []);
 
   const analyzeIngredients = async () => {
     if (!ingredients.trim()) return;
@@ -41,7 +43,7 @@ function App() {
           },
           body: JSON.stringify({ 
             ingredients,
-            user_email: userEmail
+            user_email: user
           }),
         }
       );
@@ -59,6 +61,13 @@ function App() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const logout = () => {
+    localStorage.clear();
+    setUser(null);
+    setResult(null);
+    setIngredients("");
   };
 
   const getRiskColor = (category) => {
@@ -89,9 +98,15 @@ function App() {
     }
   };
 
+  if (!user) return <Login setUser={setUser} />;
+
   return (
     <div className="app-container">
       <header className="header">
+        <div className="user-nav">
+          <span className="user-badge">👤 {user}</span>
+          <button className="logout-btn" onClick={logout}>Logout</button>
+        </div>
         <h1>
           <span>🧪</span> AllerSafe
         </h1>
@@ -226,3 +241,4 @@ function App() {
 }
 
 export default App;
+
