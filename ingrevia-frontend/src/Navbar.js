@@ -7,7 +7,9 @@ function Navbar({ user, logout }) {
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
 
-  // Close dropdown when clicking outside
+  // Extract name from email (e.g., test from test@gmail.com)
+  const displayName = user ? user.split("@")[0] : "User";
+
   useEffect(() => {
     function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -26,7 +28,7 @@ function Navbar({ user, logout }) {
 
       <div className="nav-user-container" ref={dropdownRef}>
         <div className="user-badge" onClick={() => setIsOpen(!isOpen)}>
-          👤 {user} <span className={`arrow ${isOpen ? "up" : "down"}`}>▾</span>
+          👤 {displayName} <span className={`arrow ${isOpen ? "up" : "down"}`}>▾</span>
         </div>
 
         {isOpen && (
